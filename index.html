@@ -123,19 +123,20 @@
         
         function TestIosRTCSample(event) {
 
-            /*if (isCordova == false) {
-                TestControls();
-
+            //if (isCordova == false) {
+                //TestControls();
+                debugText.innerHTML += "w"
                 loadScript(adapterUrl).then(function() {
-                    return TestGetUserMedia().then(function(localStream) {
-                        return TestRTCPeerConnection(localStream);
+                    debugText.innerHTML += "x"
+                    return TestGetUserMedia2().then(function(localStream) {
+                        //return TestRTCPeerConnection(localStream);
                     });
                 }).catch(function (err) {
                     console.error(err);
                 });
 
-            } else {*/
-                debugText.innerHTML += "1"
+            //} else {
+                /*debugText.innerHTML += "1"
                 document.addEventListener('deviceready', function() {
 
                     debugText.innerHTML += window.device.platform
@@ -180,8 +181,8 @@
                         console.error(err);
                     });
                 });
-            }
-        //}
+            }*/
+        }
         
         
         
