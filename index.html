@@ -464,6 +464,8 @@
 
                                     // Attach local stream to video element
                                     localVideoEl.srcObject = localStream;
+                                    
+                                    cordova.plugins.iosrtc.turnOnSpeaker(true);
                                 }
                                 
                                 var excludeEvents = [
