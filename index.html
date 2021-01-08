@@ -88,6 +88,8 @@
     <div id="debugVideo">video placeholder</div>
     <script>
 
+        var debugText = document.getElementById('debug2')//document.body;
+        
         /* global RTCPeerConnection */
 
 
@@ -95,7 +97,7 @@
         // Container for this sample
         //
 
-        var appContainer = document.body;
+        var appContainer = document.getElementById('debugVideo')//document.body;
         appContainer.innerHTML = "";
 
         //
@@ -136,6 +138,9 @@
             console.log('getUserMedia.stream', stream);
             console.log('getUserMedia.stream.getTracks', stream.getTracks());
 
+            debugText.innerHTML += "Track Count"
+            debugText.innerHTML += stream.getTracks().length
+            
             // Note: Expose for debug
             localStream = stream;
 
