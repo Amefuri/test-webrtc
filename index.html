@@ -90,8 +90,9 @@
     <!--<script type="text/javascript" src="js/index-janus.js"></script>-->
     <!--<script type="text/javascript" src="js/index-jssip.js"></script>-->
 
-    <div id="debug1">Build 2</div></br>
+    <div id="debug1">Build 3</div></br>
     <div id="text" style="background-color:tomato;">not init</div>
+    <div id="debugVideo">video placeholder</div>
     <script>
 
         
@@ -99,8 +100,8 @@
         // Container for this sample
         //
 
-        var appContainer = document.body;
-        appContainer.innerHTML = "";
+        //var appContainer = document.body;
+        //appContainer.innerHTML = "";
 
         TestGetUserMedia()
         
@@ -115,7 +116,8 @@
           localVideoEl.style.height = "50vh";
           localVideoEl.setAttribute('autoplay', 'autoplay');
           localVideoEl.setAttribute('playsinline', 'playsinline');
-          appContainer.appendChild(localVideoEl);
+          //appContainer.appendChild(localVideoEl);
+          document.getElementById('debugVideo').appendChild(localVideoEl);
 
           return navigator.mediaDevices.getUserMedia({
             video: true,
