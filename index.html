@@ -165,17 +165,23 @@ function getMediaOnly(){
     
     
     // Note: This allow this sample to run on any Browser
-      var cordova = window.cordova;
-      if (cordova && cordova.plugins && cordova.plugins.iosrtc) {
-
+    var cordova = window.cordova;
+    if (cordova && cordova.plugins && cordova.plugins.iosrtc) {
+        
         // Expose WebRTC and GetUserMedia SHIM as Globals (Optional)
         // Alternatively WebRTC API will be inside cordova.plugins.iosrtc namespace
         cordova.plugins.iosrtc.registerGlobals();
-
+        
         // Enable iosrtc debug (Optional)
         cordova.plugins.iosrtc.debug.enable('*', true);
-      }
+        
+        cordova.plugins.iosrtc.turnOnSpeaker(true);
+    }
     
+    // Enable Background audio
+    if (cordova && cordova.plugins && cordova.plugins.backgroundMode) {
+        cordova.plugins.backgroundMode.enable();
+    }
     
     
     navigator.mediaDevices.getUserMedia({
