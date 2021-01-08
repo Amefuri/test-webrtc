@@ -108,7 +108,7 @@
         // Container for this sample
         //
 
-        //var appContainer = document.body;
+        var appContainer = document.body;
         //appContainer.innerHTML = "";
 
         //TestGetUserMedia()
@@ -169,8 +169,8 @@
                     //TestControls();
                     loadScript(adapterUrl).then(function () {
                         debugText.innerHTML = "4"
-                        return TestGetUserMedia().then(function(localStream) {
-                            debugText.innerHTML = "5"
+                        return TestGetUserMedia2().then(function(localStream) {
+                            debugText.innerHTML = "7"
                             //return TestRTCPeerConnection(localStream);
                         });
                     }).catch(function (err) {
@@ -313,7 +313,7 @@
           document.getElementById('text').innerHTML = this.volume;
         }
         
-                                function loadScript(scriptUrl) {
+        function loadScript(scriptUrl) {
                                     return new Promise(function(resolve, reject) {
                                         // load adapter.js
                                         var script = document.createElement("script");
@@ -326,7 +326,142 @@
                                             resolve();
                                         };
                                     });
+        }
+                                
+                                
+                                
+                                
+                                var localDeviceId;
+                                function TestGetUserMedia2(deviceId) {
+
+              localVideoEl = document.createElement('video');
+              localVideoEl.style.height = "50vh";
+              localVideoEl.setAttribute('autoplay', 'autoplay');
+              localVideoEl.setAttribute('playsinline', 'playsinline');
+              //appContainer.appendChild(localVideoEl);
+              document.getElementById('debugVideo').appendChild(localVideoEl);
+              
+                                    if (!deviceId) {
+                                        return navigator.mediaDevices.enumerateDevices().then(function(devices) {
+                                            var newDevice = devices.filter(function(device) {
+                                                return device.kind === 'videoinput';
+                                            }).find(function(device, idx) {
+                                                return device.deviceId !== 'default';
+                                            });
+
+                                            localDeviceId = newDevice ? newDevice.deviceId : null;
+                                            return TestGetUserMedia2(localDeviceId || 'default');
+                                        });
+                                    }
+
+                                    console.debug('TestGetUserMedia', deviceId);
+                                    return navigator.mediaDevices.getUserMedia({
+                                        /*
+                                        video: true,
+                                        */
+                                        video: {
+                                            deviceId: deviceId,
+
+                                            /*
+                                            width: {
+                                                max: 1280,
+                                                min: 640
+                                            },
+                                            height: {
+                                                max: 720,
+                                                min: 480
+                                            },
+                                            */
+                                                                               /*
+                                            height: {
+                                                ideal: 240,
+                                                min: 180,
+                                                max: 480
+                                            },
+                                                                                */
+                                            //facingMode: 'environment'
+                                            //height: 480,
+                                            //width: 1280,
+                                            //height: 720,
+                                            //width: 1280,
+                                            //height: 960,
+                                            //aspectRatio: 16/9,
+                                            //aspectRatio: 11/9,
+                                            //aspectRatio: 4/3,
+                                            //frameRate:{ min: 30.0, max: 30.0 }
+                                        },
+                                        audio: true
+                                        /*
+                                        video: {
+                                          // Test Back Camera
+                                          //deviceId: 'com.apple.avfoundation.avcapturedevice.built-in_video:0'
+                                          //sourceId: 'com.apple.avfoundation.avcapturedevice.built-in_video:0'
+                                          deviceId: {
+                                            exact: 'com.apple.avfoundation.avcapturedevice.built-in_video:0'
+                                          }
+                                        },
+                                        audio: {
+                                          deviceId: {
+                                            exact: 'Built-In Microphone'
+                                          }
+                                        }*/
+                                    }).then(function(stream) {
+
+                                        console.debug('getUserMedia.stream', stream);
+                                        console.debug('getUserMedia.stream.getTracks', stream.getTracks());
+
+                                        TestSetLocalStream(stream);
+                                        debugText.innerHTML = "6"
+
+                                        // Test mute at Start
+                                        /*
+                                        localStream.getAudioTracks().forEach(function (track) {
+                                            track.enabled = false;
+                                        });
+                                        */
+                                        
+                                        try {
+                                            let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                                            document.getElementById('text').innerHTML = "create context " + audioContext;
+                                            let mediaStreamSource = audioContext.createMediaStreamSource(stream);
+                                            document.getElementById('text').innerHTML = "media source";
+                                            let meter = createAudioMeter(audioContext);
+                                            document.getElementById('text').innerHTML = "create meter";
+                                            mediaStreamSource.connect(meter);
+                                            document.getElementById('text').innerHTML = "connect meter";
+                                            
+                                        } catch (error) {
+                                            document.getElementById('text').innerHTML = "error" + error;
+                                        }
+                                        
+                                        return localStream;
+
+                                    }).catch(function(err) {
+                                        console.error('getUserMediaError', err, err.stack);
+                                    });
                                 }
+                                
+                                
+                                
+                             
+                                
+                                
+                                
+                                function TestSetLocalStream(localStreamMedia) {
+
+                                    //localVideoEl = appContainer.querySelector('.local-video');
+
+                                    // Note: Expose for debug
+                                    localStream = localStreamMedia;
+
+                                    // Listen to all events
+                                    //TestListenEvents(localStream);
+                                    //TestListenEvents(localVideoEl);
+
+                                    // Attach local stream to video element
+                                    localVideoEl.srcObject = localStream;
+                                }
+                                
     </script>
     <script type="text/javascript" src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/js/index-local.js"></script>
 </body>
