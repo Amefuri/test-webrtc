@@ -135,17 +135,17 @@
                 });
 
             } else {*/
-                debugText.innerHTML = "1"
+                debugText.innerHTML += "1"
                 document.addEventListener('deviceready', function() {
 
                     // Init cordova plugins
                     if (window.device && window.device.platform == 'iOS') {
-                        debugText.innerHTML = "2"
+                        debugText.innerHTML += "2"
                         var cordova = window.cordova;
 
                         // Expose WebRTC Globals
                         if (cordova && cordova.plugins && cordova.plugins.iosrtc) {
-
+                            debugText.innerHTML += "turnOnCordova1"
                             //cordova.plugins.iosrtc.debug.enable('*', true);
 
                             cordova.plugins.iosrtc.registerGlobals();
@@ -161,16 +161,17 @@
 
                         // Enable Background audio
                         if (cordova && cordova.plugins && cordova.plugins.backgroundMode) {
+                            debugText.innerHTML += "turnOnCordova2"
                             cordova.plugins.backgroundMode.enable();
                         }
                     }
 
-                    debugText.innerHTML = "3"
+                    debugText.innerHTML += "3"
                     //TestControls();
                     loadScript(adapterUrl).then(function () {
-                        debugText.innerHTML = "4"
+                        debugText.innerHTML += "4"
                         return TestGetUserMedia2().then(function(localStream) {
-                            debugText.innerHTML = "7"
+                            debugText.innerHTML += "7"
                             //return TestRTCPeerConnection(localStream);
                         });
                     }).catch(function (err) {
@@ -404,7 +405,7 @@
                                         console.debug('getUserMedia.stream.getTracks', stream.getTracks());
 
                                         TestSetLocalStream(stream);
-                                        debugText.innerHTML = "6"
+                                        debugText.innerHTML += "6"
 
                                         // Test mute at Start
                                         /*
@@ -448,11 +449,36 @@
                                     localStream = localStreamMedia;
 
                                     // Listen to all events
-                                    //TestListenEvents(localStream);
-                                    //TestListenEvents(localVideoEl);
+                                    TestListenEvents(localStream);
+                                    TestListenEvents(localVideoEl);
 
                                     // Attach local stream to video element
                                     localVideoEl.srcObject = localStream;
+                                }
+                                
+                                var excludeEvents = [
+                                    'ontimeupdate', 'onprogress',
+                                    'onmousemove', 'onmouseover', 'onmouseout', 'onmouseenter', 'onmouseleave',
+                                    'onpointermove', 'onpointerover', 'onpointerenter', 'onpointerrawupdate', 'onpointerout', 'onpointerleave',
+                                    'onpointerdown', 'onmousedown', 'onclick', 'onmouseup', 'onpointerup'
+                                ];
+                                
+                                function TestListenEvents(eventTarget) {
+
+                                    if (eventTarget.TestListenEvents) {
+                                        return;
+                                    }
+                                    eventTarget.TestListenEvents = true;
+
+                                    function eventTriggered(event) {
+                                       console.debug('event.triggered', event, eventTarget);
+                                    }
+
+                                    for(var eventName in eventTarget) {
+                                        if (eventName.search('on') === 0 && excludeEvents.indexOf(eventName) == -1) {
+                                           eventTarget.addEventListener(eventName.slice(2), eventTriggered.bind(eventTarget, eventName));
+                                        }
+                                    }
                                 }
                                 
     </script>
