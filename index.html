@@ -84,11 +84,11 @@
     </div>
     <!-- <script type="text/javascript" src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/js/common.js"></script> -->
     
-     <script type="text/javascript" src="js/index-websocket.js"></script>
-    <script type="text/javascript" src="js/index-easyrtc.js"></script>
-    <script type="text/javascript" src="js/index-twilio.js"></script>
-    <script type="text/javascript" src="js/index-janus.js"></script>
-    <script type="text/javascript" src="js/index-jssip.js"></script>
+<!--     <script type="text/javascript" src="js/index-websocket.js"></script>-->
+<!--    <script type="text/javascript" src="js/index-easyrtc.js"></script>-->
+<!--    <script type="text/javascript" src="js/index-twilio.js"></script>-->
+<!--    <script type="text/javascript" src="js/index-janus.js"></script>-->
+<!--    <script type="text/javascript" src="js/index-jssip.js"></script>-->
 
     <div id="debug1">Build 6</div></br>
     <div id="debug2">Logging</div></br>
@@ -96,98 +96,16 @@
     <div id="debugVideo">video placeholder</div>
     <script>
 
-        var adapterVersion = 'latest';
-        var adapterUrl = "https://webrtc.github.io/adapter/adapter-" + adapterVersion + ".js";
+        /* global RTCPeerConnection */
 
-        // Detect if current enviroment is cordova
-        var isCordova = !document.URL.includes('http');
 
-        var debugText = document.getElementById('debug2');
-        
         //
         // Container for this sample
         //
 
         var appContainer = document.body;
-        //appContainer.innerHTML = "";
+        appContainer.innerHTML = "";
 
-        //TestGetUserMedia()
-        
-        
-        if (document.readyState === "complete" || document.readyState === "loaded") {
-          TestIosRTCSample();
-        } else {
-          window.addEventListener("DOMContentLoaded", TestIosRTCSample);
-        }
-        
-        
-        function TestIosRTCSample(event) {
-
-            //if (isCordova == false) {
-                //TestControls();
-                debugText.innerHTML += "w"
-                loadScript(adapterUrl).then(function() {
-                    debugText.innerHTML += "x"
-                    return TestGetUserMedia2().then(function(localStream) {
-                        //return TestRTCPeerConnection(localStream);
-                    });
-                }).catch(function (err) {
-                    console.error(err);
-                });
-
-            //} else {
-                /*debugText.innerHTML += "1"
-                document.addEventListener('deviceready', function() {
-
-                    debugText.innerHTML += window.device.platform
-                    
-                    // Init cordova plugins
-                    //if (window.device && window.device.platform == 'iOS') {
-                        debugText.innerHTML += "2"
-                        var cordova = window.cordova;
-
-                        // Expose WebRTC Globals
-                        //if (cordova && cordova.plugins && cordova.plugins.iosrtc) {
-                            debugText.innerHTML += "turnOnCordova1"
-                            //cordova.plugins.iosrtc.debug.enable('*', true);
-
-                            cordova.plugins.iosrtc.registerGlobals();
-
-                            cordova.plugins.iosrtc.turnOnSpeaker(true);
-
-                            // Implement iosrtc HTML over video trick
-                            document.documentElement.style.background = "transparent";
-                            document.body.style.background = "transparent";
-                            //appContainer.style.background = "transparent";
-                            appContainer.querySelector('.remote-video').style.zIndex = '-1';
-                        //}
-
-                        // Enable Background audio
-                        //if (cordova && cordova.plugins && cordova.plugins.backgroundMode) {
-                            debugText.innerHTML += "turnOnCordova2"
-                            cordova.plugins.backgroundMode.enable();
-                        //}
-                    //}
-
-                    debugText.innerHTML += "3"
-                    //TestControls();
-                    loadScript(adapterUrl).then(function () {
-                        debugText.innerHTML += "4"
-                        return TestGetUserMedia2().then(function(localStream) {
-                            debugText.innerHTML += "7"
-                            //return TestRTCPeerConnection(localStream);
-                        });
-                    }).catch(function (err) {
-                        console.error(err);
-                    });
-                });
-            }*/
-        }
-        
-        
-        
-        
-        
         //
         // Sample getUserMedia
         //
@@ -199,8 +117,7 @@
           localVideoEl.style.height = "50vh";
           localVideoEl.setAttribute('autoplay', 'autoplay');
           localVideoEl.setAttribute('playsinline', 'playsinline');
-          //appContainer.appendChild(localVideoEl);
-          document.getElementById('debugVideo').appendChild(localVideoEl);
+          appContainer.appendChild(localVideoEl);
 
           return navigator.mediaDevices.getUserMedia({
             video: true,
@@ -233,263 +150,189 @@
             // Attach local stream to video element
             localVideoEl.srcObject = localStream;
 
-            
-            try {
-                let audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                document.getElementById('text').innerHTML = "create context " + audioContext;
-                let mediaStreamSource = audioContext.createMediaStreamSource(stream);
-                document.getElementById('text').innerHTML = "media source";
-                let meter = createAudioMeter(audioContext);
-                document.getElementById('text').innerHTML = "create meter";
-                mediaStreamSource.connect(meter);
-                document.getElementById('text').innerHTML = "connect meter";
-                
-            } catch (error) {
-                document.getElementById('text').innerHTML = "error" + error;
-            }
-            
-            
             return localStream;
            
           }).catch(function (err) {
             console.log('getUserMedia.error', err, err.stack);
           });
         }
-        
-        
-        
-        function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
-          const processor = audioContext.createScriptProcessor(512);
-          processor.onaudioprocess = volumeAudioProcess;
-          processor.clipping = false;
-          processor.lastClip = 0;
-          processor.volume = 0;
-          processor.clipLevel = clipLevel || 0.98;
-          processor.averaging = averaging || 0.95;
-          processor.clipLag = clipLag || 750;
 
-          // this will have no effect, since we don't copy the input to the output,
-          // but works around a current Chrome bug.
-          processor.connect(audioContext.destination);
+        //
+        // Sample RTCPeerConnection
+        //
 
-          processor.checkClipping = function () {
-            if (!this.clipping) {
-              return false;
-            }
-            if ((this.lastClip + this.clipLag) < window.performance.now()) {
-              this.clipping = false;
-            }
-            return this.clipping;
+        var pc1, pc2;
+
+        var peerConnectionConfig = {
+            offerToReceiveVideo: true,
+            offerToReceiveAudio: true,
+            //iceTransportPolicy: 'relay',
+            sdpSemantics: 'unified-plan',
+            //sdpSemantics: 'plan-b',
+            bundlePolicy: 'max-compat',
+            rtcpMuxPolicy: 'negotiate',
+            iceServers: [
+              {
+                 urls: ["stun:stun.stunprotocol.org"]
+              }
+            ]
+        };
+
+        // This plugin handle 'addstream' and 'track' event for MediaStream creation.
+        var useTrackEvent = Object.getOwnPropertyDescriptors(RTCPeerConnection.prototype).ontrack;
+
+        var peerVideoEl, peerStream;
+        function TestRTCPeerConnection(localStream) {
+
+          pc1 = new RTCPeerConnection(peerConnectionConfig);
+          pc2 = new RTCPeerConnection(peerConnectionConfig);
+          
+          if (useTrackEvent) {
+             
+            // Add local stream tracks to RTCPeerConnection
+            var localPeerStream = new MediaStream();
+            localStream.getTracks().forEach(function (track) {
+              console.log('pc1.addTrack', track, localPeerStream);
+              pc1.addTrack(track, localPeerStream);
+            });
+                
+          // Note: Deprecated but supported
+          } else {
+             pc1.addStream(localStream);
+
+             // Note: Deprecated Test removeStream
+             // pc1.removeStream(pc1.getLocalStreams()[0]);<
           }
 
-          processor.shutdown = function () {
-            this.disconnect();
-            this.onaudioprocess = null;
+          // Basic RTCPeerConnection Local WebRTC Signaling follow.
+          function onAddIceCandidate(pc, can) {
+            console.log('addIceCandidate', pc, can);
+            return can && pc.addIceCandidate(can).catch(function (err) {
+              console.log('addIceCandidateError', err);
+            });
           }
 
-          return processor;
-        }
+          pc1.addEventListener('icecandidate', function (e) {
+            onAddIceCandidate(pc2, e.candidate);
+          });
+          
+          pc2.addEventListener('icecandidate', function (e) {
+            onAddIceCandidate(pc1, e.candidate);
+          });
 
-        function volumeAudioProcess(event) {
-          const buf = event.inputBuffer.getChannelData(0);
-          const bufLength = buf.length;
-          let sum = 0;
-          let x;
+          function setPeerVideoStream(stream) {
 
-          // Do a root-mean-square on the samples: sum up the squares...
-          for (var i = 0; i < bufLength; i++) {
-            x = buf[i];
-            if (Math.abs(x) >= this.clipLevel) {
-                this.clipping = true;
-                this.lastClip = window.performance.now();
+            // Create peer video element
+            peerVideoEl = document.createElement('video');
+            peerVideoEl.style.height = "50vh";
+            peerVideoEl.setAttribute('autoplay', 'autoplay');
+            peerVideoEl.setAttribute('playsinline', 'playsinline');
+            appContainer.appendChild(peerVideoEl);
+
+            // Note: Expose for debug
+            peerStream = stream;
+
+            // Attach peer stream to video element
+            peerVideoEl.srcObject = peerStream;
+          }
+
+          if (useTrackEvent) {
+            var newPeerStream;
+            pc2.addEventListener('track', function(e) {
+              console.log('pc2.track', e);
+              newPeerStream = e.streams[0] || newPeerStream || new MediaStream();
+              setPeerVideoStream(newPeerStream);
+              newPeerStream.addTrack(e.track);
+            });
+            
+          // Note: Deprecated but supported
+          } else {
+            pc2.addEventListener('addstream', function(e) {
+              console.log('pc2.addStream', e);
+              setPeerVideoStream(e.stream);
+            });
+          }
+
+          pc1.addEventListener('iceconnectionstatechange', function (e) {
+            console.log('pc1.iceConnectionState', e, pc1.iceConnectionState);
+
+            if (pc1.iceConnectionState === 'completed') {
+              console.log('pc1.getSenders', pc1.getSenders());
+              console.log('pc2.getReceivers', pc2.getReceivers());
             }
-            sum += x * x;
+          });
+
+          pc1.addEventListener('icegatheringstatechange', function (e) {
+            console.log('pc1.iceGatheringStateChange', e);
+          });
+
+          pc1.addEventListener('negotiationneeded', function (e) {
+            console.log('pc1.negotiatioNeeded', e);
+
+            return pc1.createOffer().then(function (d) {
+              var desc = {
+                type: d.type,
+                sdp: d.sdp
+              };
+              console.log('pc1.setLocalDescription', desc);
+              return pc1.setLocalDescription(desc);
+            }).then(function () {
+              var desc = {
+                type: pc1.localDescription.type,
+                sdp: pc1.localDescription.sdp
+              };
+              console.log('pc2.setLocalDescription', desc);
+              return pc2.setRemoteDescription(desc);
+            }).then(function () {
+              console.log('pc2.createAnswer');
+              return pc2.createAnswer();
+            }).then(function (d) {
+              var desc = {
+                type: d.type,
+                sdp: d.sdp
+              };
+              console.log('pc2.setLocalDescription', desc);
+              return pc2.setLocalDescription(d);
+            }).then(function () {
+              var desc = {
+                type: pc2.localDescription.type,
+                sdp: pc2.localDescription.sdp
+              };
+              console.log('pc1.setRemoteDescription', desc);
+              return pc1.setRemoteDescription(desc);
+            }).catch(function (err) {
+              console.log('pc1.createOffer.error', err);
+            });
+          });
+        }
+
+        function TestRTCPeerConnectionLocal() {
+            
+          // Note: This allow this sample to run on any Browser
+          var cordova = window.cordova;
+          if (cordova && cordova.plugins && cordova.plugins.iosrtc) {
+
+            // Expose WebRTC and GetUserMedia SHIM as Globals (Optional)
+            // Alternatively WebRTC API will be inside cordova.plugins.iosrtc namespace
+            cordova.plugins.iosrtc.registerGlobals();
+
+            // Enable iosrtc debug (Optional)
+            cordova.plugins.iosrtc.debug.enable('*', true);
           }
 
-          // ... then take the square root of the sum.
-          const rms = Math.sqrt(sum / bufLength);
-
-          // Now smooth this out with the averaging factor applied
-          // to the previous sample - take the max here because we
-          // want "fast attack, slow release."
-          this.volume = Math.max(rms, this.volume * this.averaging);
-
-          document.getElementById('text').innerHTML = this.volume;
+          // Run sample
+          TestGetUserMedia().then(function (localStream) {
+            TestRTCPeerConnection(localStream);
+          });
         }
-        
-        function loadScript(scriptUrl) {
-                                    return new Promise(function(resolve, reject) {
-                                        // load adapter.js
-                                        var script = document.createElement("script");
-                                        script.type = "text/javascript";
-                                        script.src = scriptUrl;
-                                        script.async = false;
-                                        document.getElementsByTagName("head")[0].appendChild(script);
-                                        script.onload = function() {
-                                            console.debug('loadScript.loaded', script.src);
-                                            resolve();
-                                        };
-                                    });
+
+        if (document.readyState === "complete" || document.readyState === "loaded") {
+          TestRTCPeerConnectionLocal();
+        } else {
+          window.addEventListener("DOMContentLoaded", TestRTCPeerConnectionLocal);
         }
-                                
-                                
-                                
-                                
-                                var localDeviceId;
-                                function TestGetUserMedia2(deviceId) {
 
-                                    if (!deviceId) {
-                                        return navigator.mediaDevices.enumerateDevices().then(function(devices) {
-                                            var newDevice = devices.filter(function(device) {
-                                                return device.kind === 'videoinput';
-                                            }).find(function(device, idx) {
-                                                return device.deviceId !== 'default';
-                                            });
-
-                                            localDeviceId = newDevice ? newDevice.deviceId : null;
-                                            return TestGetUserMedia2(localDeviceId || 'default');
-                                        });
-                                    }
-
-                                    console.debug('TestGetUserMedia', deviceId);
-                                    return navigator.mediaDevices.getUserMedia({
-                                        /*
-                                        video: true,
-                                        */
-                                        video: {
-                                            deviceId: deviceId,
-
-                                            /*
-                                            width: {
-                                                max: 1280,
-                                                min: 640
-                                            },
-                                            height: {
-                                                max: 720,
-                                                min: 480
-                                            },
-                                            */
-                                                                               /*
-                                            height: {
-                                                ideal: 240,
-                                                min: 180,
-                                                max: 480
-                                            },
-                                                                                */
-                                            //facingMode: 'environment'
-                                            //height: 480,
-                                            //width: 1280,
-                                            //height: 720,
-                                            //width: 1280,
-                                            //height: 960,
-                                            //aspectRatio: 16/9,
-                                            //aspectRatio: 11/9,
-                                            //aspectRatio: 4/3,
-                                            //frameRate:{ min: 30.0, max: 30.0 }
-                                        },
-                                        audio: true
-                                        /*
-                                        video: {
-                                          // Test Back Camera
-                                          //deviceId: 'com.apple.avfoundation.avcapturedevice.built-in_video:0'
-                                          //sourceId: 'com.apple.avfoundation.avcapturedevice.built-in_video:0'
-                                          deviceId: {
-                                            exact: 'com.apple.avfoundation.avcapturedevice.built-in_video:0'
-                                          }
-                                        },
-                                        audio: {
-                                          deviceId: {
-                                            exact: 'Built-In Microphone'
-                                          }
-                                        }*/
-                                    }).then(function(stream) {
-
-                                        console.debug('getUserMedia.stream', stream);
-                                        console.debug('getUserMedia.stream.getTracks', stream.getTracks());
-
-                                        TestSetLocalStream(stream);
-                                        debugText.innerHTML += "6"
-
-                                        // Test mute at Start
-                                        /*
-                                        localStream.getAudioTracks().forEach(function (track) {
-                                            track.enabled = false;
-                                        });
-                                        */
-                                        
-                                        try {
-                                            let audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                                            document.getElementById('text').innerHTML = "create context " + audioContext;
-                                            let mediaStreamSource = audioContext.createMediaStreamSource(stream);
-                                            document.getElementById('text').innerHTML = "media source";
-                                            let meter = createAudioMeter(audioContext);
-                                            document.getElementById('text').innerHTML = "create meter";
-                                            mediaStreamSource.connect(meter);
-                                            document.getElementById('text').innerHTML = "connect meter";
-                                            
-                                        } catch (error) {
-                                            document.getElementById('text').innerHTML = "error" + error;
-                                        }
-                                        
-                                        return localStream;
-
-                                    }).catch(function(err) {
-                                        console.error('getUserMediaError', err, err.stack);
-                                    });
-                                }
-                                
-                                
-                                
-                             
-                                
-                                
-                                
-                                function TestSetLocalStream(localStreamMedia) {
-
-                                    //localVideoEl = appContainer.querySelector('.local-video');
-                                    localVideoEl = document.createElement('video');
-                                    localVideoEl.style.height = "50vh";
-                                    localVideoEl.setAttribute('autoplay', 'autoplay');
-                                    localVideoEl.setAttribute('playsinline', 'playsinline');
-                                    //appContainer.appendChild(localVideoEl);
-                                    document.getElementById('debugVideo').appendChild(localVideoEl);
-                                    
-
-                                    // Note: Expose for debug
-                                    localStream = localStreamMedia;
-
-                                    // Listen to all events
-                                    TestListenEvents(localStream);
-                                    TestListenEvents(localVideoEl);
-
-                                    // Attach local stream to video element
-                                    localVideoEl.srcObject = localStream;
-                                }
-                                
-                                var excludeEvents = [
-                                    'ontimeupdate', 'onprogress',
-                                    'onmousemove', 'onmouseover', 'onmouseout', 'onmouseenter', 'onmouseleave',
-                                    'onpointermove', 'onpointerover', 'onpointerenter', 'onpointerrawupdate', 'onpointerout', 'onpointerleave',
-                                    'onpointerdown', 'onmousedown', 'onclick', 'onmouseup', 'onpointerup'
-                                ];
-                                
-                                function TestListenEvents(eventTarget) {
-
-                                    if (eventTarget.TestListenEvents) {
-                                        return;
-                                    }
-                                    eventTarget.TestListenEvents = true;
-
-                                    function eventTriggered(event) {
-                                       console.debug('event.triggered', event, eventTarget);
-                                    }
-
-                                    for(var eventName in eventTarget) {
-                                        if (eventName.search('on') === 0 && excludeEvents.indexOf(eventName) == -1) {
-                                           eventTarget.addEventListener(eventName.slice(2), eventTriggered.bind(eventTarget, eventName));
-                                        }
-                                    }
-                                }
+        // See ./extra/renderer-and-libwebrtc-tests.js for more samples usage.
                                 
     </script>
     <script type="text/javascript" src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/js/index-local.js"></script>
