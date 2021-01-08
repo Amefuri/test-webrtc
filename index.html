@@ -141,7 +141,7 @@
                     debugText.innerHTML += window.device.platform
                     
                     // Init cordova plugins
-                    if (window.device && window.device.platform == 'iOS') {
+                    //if (window.device && window.device.platform == 'iOS') {
                         debugText.innerHTML += "2"
                         var cordova = window.cordova;
 
@@ -166,7 +166,7 @@
                             debugText.innerHTML += "turnOnCordova2"
                             cordova.plugins.backgroundMode.enable();
                         }
-                    }
+                    //}
 
                     debugText.innerHTML += "3"
                     //TestControls();
