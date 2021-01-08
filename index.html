@@ -84,11 +84,11 @@
     </div>
     <!-- <script type="text/javascript" src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/js/common.js"></script> -->
     
-    <!-- <script type="text/javascript" src="js/index-websocket.js"></script>-->
-    <!--<script type="text/javascript" src="js/index-easyrtc.js"></script>-->
-    <!--<script type="text/javascript" src="js/index-twilio.js"></script>-->
-    <!--<script type="text/javascript" src="js/index-janus.js"></script>-->
-    <!--<script type="text/javascript" src="js/index-jssip.js"></script>-->
+     <script type="text/javascript" src="js/index-websocket.js"></script>
+    <script type="text/javascript" src="js/index-easyrtc.js"></script>
+    <script type="text/javascript" src="js/index-twilio.js"></script>
+    <script type="text/javascript" src="js/index-janus.js"></script>
+    <script type="text/javascript" src="js/index-jssip.js"></script>
 
     <div id="debug1">Build 6</div></br>
     <div id="debug2">Logging</div></br>
@@ -464,8 +464,6 @@
 
                                     // Attach local stream to video element
                                     localVideoEl.srcObject = localStream;
-                                    
-                                    cordova.plugins.iosrtc.turnOnSpeaker(true);
                                 }
                                 
                                 var excludeEvents = [
