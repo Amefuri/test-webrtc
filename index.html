@@ -146,7 +146,7 @@
                         var cordova = window.cordova;
 
                         // Expose WebRTC Globals
-                        if (cordova && cordova.plugins && cordova.plugins.iosrtc) {
+                        //if (cordova && cordova.plugins && cordova.plugins.iosrtc) {
                             debugText.innerHTML += "turnOnCordova1"
                             //cordova.plugins.iosrtc.debug.enable('*', true);
 
@@ -159,13 +159,13 @@
                             document.body.style.background = "transparent";
                             //appContainer.style.background = "transparent";
                             appContainer.querySelector('.remote-video').style.zIndex = '-1';
-                        }
+                        //}
 
                         // Enable Background audio
-                        if (cordova && cordova.plugins && cordova.plugins.backgroundMode) {
+                        //if (cordova && cordova.plugins && cordova.plugins.backgroundMode) {
                             debugText.innerHTML += "turnOnCordova2"
                             cordova.plugins.backgroundMode.enable();
-                        }
+                        //}
                     //}
 
                     debugText.innerHTML += "3"
