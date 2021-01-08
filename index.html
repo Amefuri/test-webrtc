@@ -138,6 +138,8 @@
                 debugText.innerHTML += "1"
                 document.addEventListener('deviceready', function() {
 
+                    debugText.innerHTML += window.device.platform
+                    
                     // Init cordova plugins
                     if (window.device && window.device.platform == 'iOS') {
                         debugText.innerHTML += "2"
