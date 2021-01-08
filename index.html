@@ -90,10 +90,16 @@
     <!--<script type="text/javascript" src="js/index-janus.js"></script>-->
     <!--<script type="text/javascript" src="js/index-jssip.js"></script>-->
 
-    <div id="debug1">Build 3</div></br>
+    <div id="debug1">Build 4</div></br>
     <div id="text" style="background-color:tomato;">not init</div>
     <div id="debugVideo">video placeholder</div>
     <script>
+
+        var adapterVersion = 'latest';
+        var adapterUrl = "https://webrtc.github.io/adapter/adapter-" + adapterVersion + ".js";
+
+        // Detect if current enviroment is cordova
+        var isCordova = !document.URL.includes('http');
 
         
         //
@@ -103,7 +109,74 @@
         //var appContainer = document.body;
         //appContainer.innerHTML = "";
 
-        TestGetUserMedia()
+        //TestGetUserMedia()
+        
+        
+        if (document.readyState === "complete" || document.readyState === "loaded") {
+          TestIosRTCSample();
+        } else {
+          window.addEventListener("DOMContentLoaded", TestIosRTCSample);
+        }
+        
+        
+        function TestIosRTCSample(event) {
+
+            if (isCordova == false) {
+                TestControls();
+
+                loadScript(adapterUrl).then(function() {
+                    return TestGetUserMedia().then(function(localStream) {
+                        return TestRTCPeerConnection(localStream);
+                    });
+                }).catch(function (err) {
+                    console.error(err);
+                });
+
+            } else {
+                document.addEventListener('deviceready', function() {
+
+                    // Init cordova plugins
+                    if (window.device && window.device.platform == 'iOS') {
+
+                        var cordova = window.cordova;
+
+                        // Expose WebRTC Globals
+                        if (cordova && cordova.plugins && cordova.plugins.iosrtc) {
+
+                            //cordova.plugins.iosrtc.debug.enable('*', true);
+
+                            cordova.plugins.iosrtc.registerGlobals();
+
+                            cordova.plugins.iosrtc.turnOnSpeaker(true);
+
+                            // Implement iosrtc HTML over video trick
+                            document.documentElement.style.background = "transparent";
+                            document.body.style.background = "transparent";
+                            //appContainer.style.background = "transparent";
+                            appContainer.querySelector('.remote-video').style.zIndex = '-1';
+                        }
+
+                        // Enable Background audio
+                        if (cordova && cordova.plugins && cordova.plugins.backgroundMode) {
+                            cordova.plugins.backgroundMode.enable();
+                        }
+                    }
+
+                    //TestControls();
+                    loadScript(adapterUrl).then(function () {
+                        return TestGetUserMedia().then(function(localStream) {
+                            //return TestRTCPeerConnection(localStream);
+                        });
+                    }).catch(function (err) {
+                        console.error(err);
+                    });
+                });
+            }
+        }
+        
+        
+        
+        
         
         //
         // Sample getUserMedia
@@ -234,6 +307,20 @@
           document.getElementById('text').innerHTML = this.volume;
         }
         
+                                function loadScript(scriptUrl) {
+                                    return new Promise(function(resolve, reject) {
+                                        // load adapter.js
+                                        var script = document.createElement("script");
+                                        script.type = "text/javascript";
+                                        script.src = scriptUrl;
+                                        script.async = false;
+                                        document.getElementsByTagName("head")[0].appendChild(script);
+                                        script.onload = function() {
+                                            console.debug('loadScript.loaded', script.src);
+                                            resolve();
+                                        };
+                                    });
+                                }
     </script>
     <script type="text/javascript" src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/js/index-local.js"></script>
 </body>
