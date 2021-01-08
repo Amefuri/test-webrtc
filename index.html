@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="Content-Security-Policy" content=" media-src * blob: ; script-src * 'self' 'unsafe-inline' 'unsafe-eval'; connect-src * blob: http: https: 'self' 'unsafe-inline' 'unsafe-eval' http://*/* https://*/* https://*:* ">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no,viewport-fit=cover">
+
+        <!-- <link rel="stylesheet" type="text/css" href="css/index.css"> -->
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500,700" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,400italic" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
+        <title>Cordova-RTC</title>
+        <script src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/cordova.js"></script>
+        <script src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/cordova_plugins.js"></script>
+        <script src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/plugins/cordova-plugin-device/www/device.js"></script>
+        <script src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/plugins/cordova-plugin-device/src/browser/DeviceProxy.js"></script>
+        <script src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/plugins/cordova-plugin-background-mode/www/background-mode.js"></script>
+        <script src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/plugins/cordova-plugin-background-mode/src/browser/BackgroundModeProxy.js"></script>
+        <script src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/plugins/cordova-plugin-statusbar/www/statusbar.js"></script>
+        <script src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/plugins/cordova-plugin-statusbar/src/browser/StatusBarProxy.js"></script>
+        <script type="text/javascript" src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+</head>
+<body>
+    <div class="app">
+        <div class="remote-stream">
+            <div class="remote-video-loader hidden">Loading...</div>
+            <video class="remote-video video-only" a    utoplay="autoplay" playsinline="playsinline" webkit-playsinline="" _src="assets/Sunset.mp4"></video>
+            <div class="notice notice-alone hidden">
+                Press Call button to start the call.
+            </div>
+        </div>
+        <div class="controls footer-controls">
+            <button class="btn btn-round hidden" name="mic_on">
+                <i class="material-icons">mic</i>
+            </button>
+            <button class="btn btn-round" name="mic_off">
+                <i class="material-icons">mic_off</i>
+            </button>
+            <button class="btn btn-round btn-danger btn-hangup" name="hangup_remote">
+                <i class="material-icons">call_end</i>
+            </button>
+            <button class="btn btn-round btn-call hidden" name="call_remote">
+                <i class="material-icons">call</i>
+            </button>
+            <button class="btn btn-round hidden" name="camera_on">
+                <i class="material-icons">videocam</i>
+            </button>
+            <button class="btn btn-round" name="camera_off">
+                <i class="material-icons">videocam_off</i>
+            </button>
+        </div>
+        <div class="local-stream">
+            <video class="local-video" muted="" autoplay="autoplay" playsinline="playsinline" webkit-playsinline="" _src="assets/Sunset.mp4"></video>
+        </div>
+        <div class="controls local-controls">
+            <button class="btn btn-round btn-sm" name="switch_camera">
+                <i class="material-icons">flip_camera_ios</i>
+            </button>
+        </div>
+        <div class="controls top-controls">
+            <button class="btn btn-round btn-info" name="settings">
+                <i class="material-icons">settings</i>
+            </button>
+            <button class="btn btn-round hidden" name="speaker">
+                <i class="material-icons">speaker_phone</i>
+            </button>
+            <button class="btn btn-round hidden" name="earpiece">
+                <i class="material-icons">headset</i>
+            </button>
+            <button class="btn btn-round hidden" name="unmute_remote">
+                <i class="material-icons">volume_up</i>
+            </button>
+            <button class="btn btn-round" name="mute_remote">
+                <i class="material-icons">volume_off</i>
+            </button>
+        </div>
+        <div class="controls report-controls">
+            <button class="btn btn-report" name="report">
+                <i class="material-icons">bug_report</i>
+            </button>
+        </div>
+    </div>
+    <!-- <script type="text/javascript" src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/js/common.js"></script> -->
+    
+    <!-- <script type="text/javascript" src="js/index-websocket.js"></script>-->
+    <!--<script type="text/javascript" src="js/index-easyrtc.js"></script>-->
+    <!--<script type="text/javascript" src="js/index-twilio.js"></script>-->
+    <!--<script type="text/javascript" src="js/index-janus.js"></script>-->
+    <!--<script type="text/javascript" src="js/index-jssip.js"></script>-->
+
+    <div id="text">not init</div>
+    <script>
+
+// Config
+// Note: Change to match your adapter version
+var adapterVersion = 'latest';
+var adapterUrl = "https://webrtc.github.io/adapter/adapter-" + adapterVersion + ".js";
+
+function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
+  const processor = audioContext.createScriptProcessor(512);
+  processor.onaudioprocess = volumeAudioProcess;
+  processor.clipping = false;
+  processor.lastClip = 0;
+  processor.volume = 0;
+  processor.clipLevel = clipLevel || 0.98;
+  processor.averaging = averaging || 0.95;
+  processor.clipLag = clipLag || 750;
+
+  // this will have no effect, since we don't copy the input to the output,
+  // but works around a current Chrome bug.
+  processor.connect(audioContext.destination);
+
+  processor.checkClipping = function () {
+    if (!this.clipping) {
+      return false;
+    }
+    if ((this.lastClip + this.clipLag) < window.performance.now()) {
+      this.clipping = false;
+    }
+    return this.clipping;
+  }
+
+  processor.shutdown = function () {
+    this.disconnect();
+    this.onaudioprocess = null;
+  }
+
+  return processor;
+}
+
+function volumeAudioProcess(event) {
+  const buf = event.inputBuffer.getChannelData(0);
+  const bufLength = buf.length;
+  let sum = 0;
+  let x;
+
+  // Do a root-mean-square on the samples: sum up the squares...
+  for (var i = 0; i < bufLength; i++) {
+    x = buf[i];
+    if (Math.abs(x) >= this.clipLevel) {
+        this.clipping = true;
+        this.lastClip = window.performance.now();
+    }
+    sum += x * x;
+  }
+
+  // ... then take the square root of the sum.
+  const rms = Math.sqrt(sum / bufLength);
+
+  // Now smooth this out with the averaging factor applied
+  // to the previous sample - take the max here because we
+  // want "fast attack, slow release."
+  this.volume = Math.max(rms, this.volume * this.averaging);
+
+  document.getElementById('text').innerHTML = this.volume;
+}
+
+function getMediaOnly(){
+    console.log("Get media only");
+    document.getElementById('text').innerHTML = "getting media";
+
+    navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+    }).then(function (stream) {
+        document.getElementById('text').innerHTML = "promise found";
+        
+        console.log("stream",stream);
+        console.log("stream.track", stream.getTracks());
+        document.getElementById('text').innerHTML = "found stream " + stream.getTracks();
+        //let track = stream.getAudioTracks()[0]
+        //document.getElementById('text').innerHTML = "initialize track";
+        
+        try {
+            let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            document.getElementById('text').innerHTML = "create context " + audioContext;
+            let mediaStreamSource = audioContext.createMediaStreamSource(stream);
+            document.getElementById('text').innerHTML = "media source";
+            let meter = createAudioMeter(audioContext);
+            document.getElementById('text').innerHTML = "create meter";
+            mediaStreamSource.connect(meter);
+            document.getElementById('text').innerHTML = "connect meter";
+            
+        } catch (error) {
+            document.getElementById('text').innerHTML = "error" + error;
+        }
+
+    })
+}
+
+if (document.readyState === "complete" || document.readyState === "loaded") {
+    getMediaOnly();
+} else {
+  window.addEventListener("DOMContentLoaded", getMediaOnly);
+}
+    </script>
+    <script type="text/javascript" src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/js/index-local.js"></script>
+</body>
+</html>
