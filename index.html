@@ -161,6 +161,23 @@ function getMediaOnly(){
     console.log("Get media only");
     document.getElementById('text').innerHTML = "getting media";
 
+    
+    
+    
+    // Note: This allow this sample to run on any Browser
+      var cordova = window.cordova;
+      if (cordova && cordova.plugins && cordova.plugins.iosrtc) {
+
+        // Expose WebRTC and GetUserMedia SHIM as Globals (Optional)
+        // Alternatively WebRTC API will be inside cordova.plugins.iosrtc namespace
+        cordova.plugins.iosrtc.registerGlobals();
+
+        // Enable iosrtc debug (Optional)
+        cordova.plugins.iosrtc.debug.enable('*', true);
+      }
+    
+    
+    
     navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
