@@ -90,7 +90,8 @@
     <!--<script type="text/javascript" src="js/index-janus.js"></script>-->
     <!--<script type="text/javascript" src="js/index-jssip.js"></script>-->
 
-    <div id="debug1">Build 4</div></br>
+    <div id="debug1">Build 5</div></br>
+    <div id="debug2">Logging</div></br>
     <div id="text" style="background-color:tomato;">not init</div>
     <div id="debugVideo">video placeholder</div>
     <script>
@@ -101,6 +102,7 @@
         // Detect if current enviroment is cordova
         var isCordova = !document.URL.includes('http');
 
+        var debugText = document.getElementById('debug2');
         
         //
         // Container for this sample
@@ -121,7 +123,7 @@
         
         function TestIosRTCSample(event) {
 
-            if (isCordova == false) {
+            /*if (isCordova == false) {
                 TestControls();
 
                 loadScript(adapterUrl).then(function() {
@@ -132,12 +134,13 @@
                     console.error(err);
                 });
 
-            } else {
+            } else {*/
+                debugText.innerHTML = "1"
                 document.addEventListener('deviceready', function() {
 
                     // Init cordova plugins
                     if (window.device && window.device.platform == 'iOS') {
-
+                        debugText.innerHTML = "2"
                         var cordova = window.cordova;
 
                         // Expose WebRTC Globals
@@ -162,9 +165,12 @@
                         }
                     }
 
+                    debugText.innerHTML = "3"
                     //TestControls();
                     loadScript(adapterUrl).then(function () {
+                        debugText.innerHTML = "4"
                         return TestGetUserMedia().then(function(localStream) {
+                            debugText.innerHTML = "5"
                             //return TestRTCPeerConnection(localStream);
                         });
                     }).catch(function (err) {
@@ -172,7 +178,7 @@
                     });
                 });
             }
-        }
+        //}
         
         
         
