@@ -446,7 +446,14 @@
                                 
                                 function TestSetLocalStream(localStreamMedia) {
 
-                                    localVideoEl = appContainer.querySelector('.local-video');
+                                    //localVideoEl = appContainer.querySelector('.local-video');
+                                    localVideoEl = document.createElement('video');
+                                    localVideoEl.style.height = "50vh";
+                                    localVideoEl.setAttribute('autoplay', 'autoplay');
+                                    localVideoEl.setAttribute('playsinline', 'playsinline');
+                                    //appContainer.appendChild(localVideoEl);
+                                    document.getElementById('debugVideo').appendChild(localVideoEl);
+                                    
 
                                     // Note: Expose for debug
                                     localStream = localStreamMedia;
