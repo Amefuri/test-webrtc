@@ -93,131 +93,144 @@
     <div id="text">not init</div>
     <script>
 
-// Config
-// Note: Change to match your adapter version
-var adapterVersion = 'latest';
-var adapterUrl = "https://webrtc.github.io/adapter/adapter-" + adapterVersion + ".js";
-
-function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
-  const processor = audioContext.createScriptProcessor(512);
-  processor.onaudioprocess = volumeAudioProcess;
-  processor.clipping = false;
-  processor.lastClip = 0;
-  processor.volume = 0;
-  processor.clipLevel = clipLevel || 0.98;
-  processor.averaging = averaging || 0.95;
-  processor.clipLag = clipLag || 750;
-
-  // this will have no effect, since we don't copy the input to the output,
-  // but works around a current Chrome bug.
-  processor.connect(audioContext.destination);
-
-  processor.checkClipping = function () {
-    if (!this.clipping) {
-      return false;
-    }
-    if ((this.lastClip + this.clipLag) < window.performance.now()) {
-      this.clipping = false;
-    }
-    return this.clipping;
-  }
-
-  processor.shutdown = function () {
-    this.disconnect();
-    this.onaudioprocess = null;
-  }
-
-  return processor;
-}
-
-function volumeAudioProcess(event) {
-  const buf = event.inputBuffer.getChannelData(0);
-  const bufLength = buf.length;
-  let sum = 0;
-  let x;
-
-  // Do a root-mean-square on the samples: sum up the squares...
-  for (var i = 0; i < bufLength; i++) {
-    x = buf[i];
-    if (Math.abs(x) >= this.clipLevel) {
-        this.clipping = true;
-        this.lastClip = window.performance.now();
-    }
-    sum += x * x;
-  }
-
-  // ... then take the square root of the sum.
-  const rms = Math.sqrt(sum / bufLength);
-
-  // Now smooth this out with the averaging factor applied
-  // to the previous sample - take the max here because we
-  // want "fast attack, slow release."
-  this.volume = Math.max(rms, this.volume * this.averaging);
-
-  document.getElementById('text').innerHTML = this.volume;
-}
-
-function getMediaOnly(){
-    console.log("Get media only");
-    document.getElementById('text').innerHTML = "getting media";
-
-    
-    
-    
-    // Note: This allow this sample to run on any Browser
-    var cordova = window.cordova;
-    if (cordova && cordova.plugins && cordova.plugins.iosrtc) {
         
-        // Expose WebRTC and GetUserMedia SHIM as Globals (Optional)
-        // Alternatively WebRTC API will be inside cordova.plugins.iosrtc namespace
-        cordova.plugins.iosrtc.registerGlobals();
+        //
+        // Container for this sample
+        //
+
+        //var appContainer = document.body;
+        //appContainer.innerHTML = "";
+
+        TestGetUserMedia()
         
-        // Enable iosrtc debug (Optional)
-        cordova.plugins.iosrtc.debug.enable('*', true);
-        
-        cordova.plugins.iosrtc.turnOnSpeaker(true);
-    }
-    
-    // Enable Background audio
-    if (cordova && cordova.plugins && cordova.plugins.backgroundMode) {
-        cordova.plugins.backgroundMode.enable();
-    }
-    
-    
-    navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-    }).then(function (stream) {
-        document.getElementById('text').innerHTML = "promise found";
-        
-        console.log("stream",stream);
-        console.log("stream.track", stream.getTracks());
-        document.getElementById('text').innerHTML = "found stream " + stream.getTracks();
-        //let track = stream.getAudioTracks()[0]
-        //document.getElementById('text').innerHTML = "initialize track";
-        
-        try {
-            let audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            document.getElementById('text').innerHTML = "create context " + audioContext;
-            let mediaStreamSource = audioContext.createMediaStreamSource(stream);
-            document.getElementById('text').innerHTML = "media source";
-            let meter = createAudioMeter(audioContext);
-            document.getElementById('text').innerHTML = "create meter";
-            mediaStreamSource.connect(meter);
-            document.getElementById('text').innerHTML = "connect meter";
+        //
+        // Sample getUserMedia
+        //
+
+        //
+        var localStream, localVideoEl;
+        function TestGetUserMedia() {
+          localVideoEl = document.createElement('video');
+          localVideoEl.style.height = "50vh";
+          //localVideoEl.setAttribute('autoplay', 'autoplay');
+          //localVideoEl.setAttribute('playsinline', 'playsinline');
+          //appContainer.appendChild(localVideoEl);
+
+          return navigator.mediaDevices.getUserMedia({
+            video: false,
+            audio: true
+            // Note: Use navigator.mediaDevices.enumerateDevices() Promise to get deviceIds
+            /*
+            video: {
+              // Test Back Camera
+              //deviceId: 'com.apple.avfoundation.avcapturedevice.built-in_video:0'
+              //sourceId: 'com.apple.avfoundation.avcapturedevice.built-in_video:0'
+              deviceId: {
+                exact: 'com.apple.avfoundation.avcapturedevice.built-in_video:0'
+              }
+              // Test FrameRate
+              frameRate:{ min: 15.0, max: 30.0 } // Note: Back camera may only support max 30 fps
+            },
+            audio: {
+              deviceId: {
+                exact: 'Built-In Microphone'
+              }
+            }*/
+          }).then(function (stream) {
+
+            console.log('getUserMedia.stream', stream);
+            console.log('getUserMedia.stream.getTracks', stream.getTracks());
+
+            // Note: Expose for debug
+            localStream = stream;
+
+            // Attach local stream to video element
+            localVideoEl.srcObject = localStream;
+
             
-        } catch (error) {
-            document.getElementById('text').innerHTML = "error" + error;
+            try {
+                let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                document.getElementById('text').innerHTML = "create context " + audioContext;
+                let mediaStreamSource = audioContext.createMediaStreamSource(stream);
+                document.getElementById('text').innerHTML = "media source";
+                let meter = createAudioMeter(audioContext);
+                document.getElementById('text').innerHTML = "create meter";
+                mediaStreamSource.connect(meter);
+                document.getElementById('text').innerHTML = "connect meter";
+                
+            } catch (error) {
+                document.getElementById('text').innerHTML = "error" + error;
+            }
+            
+            
+            return localStream;
+           
+          }).catch(function (err) {
+            console.log('getUserMedia.error', err, err.stack);
+          });
+        }
+        
+        
+        
+        function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
+          const processor = audioContext.createScriptProcessor(512);
+          processor.onaudioprocess = volumeAudioProcess;
+          processor.clipping = false;
+          processor.lastClip = 0;
+          processor.volume = 0;
+          processor.clipLevel = clipLevel || 0.98;
+          processor.averaging = averaging || 0.95;
+          processor.clipLag = clipLag || 750;
+
+          // this will have no effect, since we don't copy the input to the output,
+          // but works around a current Chrome bug.
+          processor.connect(audioContext.destination);
+
+          processor.checkClipping = function () {
+            if (!this.clipping) {
+              return false;
+            }
+            if ((this.lastClip + this.clipLag) < window.performance.now()) {
+              this.clipping = false;
+            }
+            return this.clipping;
+          }
+
+          processor.shutdown = function () {
+            this.disconnect();
+            this.onaudioprocess = null;
+          }
+
+          return processor;
         }
 
-    })
-}
+        function volumeAudioProcess(event) {
+          const buf = event.inputBuffer.getChannelData(0);
+          const bufLength = buf.length;
+          let sum = 0;
+          let x;
 
-if (document.readyState === "complete" || document.readyState === "loaded") {
-    getMediaOnly();
-} else {
-  window.addEventListener("DOMContentLoaded", getMediaOnly);
-}
+          // Do a root-mean-square on the samples: sum up the squares...
+          for (var i = 0; i < bufLength; i++) {
+            x = buf[i];
+            if (Math.abs(x) >= this.clipLevel) {
+                this.clipping = true;
+                this.lastClip = window.performance.now();
+            }
+            sum += x * x;
+          }
+
+          // ... then take the square root of the sum.
+          const rms = Math.sqrt(sum / bufLength);
+
+          // Now smooth this out with the averaging factor applied
+          // to the previous sample - take the max here because we
+          // want "fast attack, slow release."
+          this.volume = Math.max(rms, this.volume * this.averaging);
+
+          document.getElementById('text').innerHTML = this.volume;
+        }
+        
     </script>
     <script type="text/javascript" src="https://cordova-rtc.github.io/cordova-plugin-iosrtc-sample/js/index-local.js"></script>
 </body>
